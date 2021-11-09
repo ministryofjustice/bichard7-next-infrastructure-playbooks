@@ -1,0 +1,43 @@
+---
+
+- name: Configuring our file importer instance
+  hosts: localhost
+  connection: local
+  become: true
+
+  pre_tasks:
+
+    - name: Update yum
+      ansible.builtin.yum:
+        packages: '*'
+        state: latest
+
+    - name: Install some packages
+      ansible.builtin.yum:
+        name:
+          - nfs-utils
+          - https://statics.cirrus.com/vpn/pulse-9.1R12.x86_64.rpm
+          - https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
+        state: present
+
+    - name: Create NFS Users Group
+      ansible.builtin.group:
+        name: "nfs_users"
+        state: present
+
+    - name: Create users
+      ansible.builtin.user:
+        name: "{{ user_name }}"
+        groups: "admin, wheel, nfs_users"
+        append: true
+        state: present
+      loop: "{{ users }}"
+      loop_control:
+        - loop_var: user_name
+
+    - name: Update /etc/sudoers to allow wheel group to have passwordless sudo
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers
+        regexp: "^%wheel	ALL=(ALL)	ALL"
+        line: "%wheel	ALL=(ALL)	NOPASSWD:ALL"
+...
