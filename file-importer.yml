@@ -27,13 +27,13 @@
 
     - name: Create users
       ansible.builtin.user:
-        name: "{{ user_name }}"
-        groups: "admin, wheel, nfs_users"
+        name: "{{ user.name }}"
+        groups: "{{ user.groups | default(omit) | join(',') }}"
         append: true
         state: present
       loop: "{{ users }}"
       loop_control:
-        - loop_var: user_name
+        - loop_var: user
 
     - name: Update /etc/sudoers to allow wheel group to have passwordless sudo
       ansible.builtin.lineinfile:
