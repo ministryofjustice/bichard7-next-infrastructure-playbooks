@@ -2,5 +2,8 @@
 
 roles: []
 
-collections: []
+collections:
+  - name: ansible.posix
+
+  - name: amazon.aws
 ...
