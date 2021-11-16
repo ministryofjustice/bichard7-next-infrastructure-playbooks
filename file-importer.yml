@@ -24,22 +24,22 @@
         groups: "wheel, admin"
         append: true
         state: present
-        password: "{{  lookup('aws_ssm', '"{{ prefix }}/importer/ssh/{{ user }}/password"', region='eu-west-2' ) | password_hash('sha512', '"{{ password_salt }}"' ) }}"
+        password: "{{  lookup('aws_ssm', '{{ prefix }}/importer/ssh/{{ user }}/password', region='eu-west-2' ) | password_hash('sha512', '{{ password_salt }}' ) }}"
       loop: "{{ users }}"
       loop_control:
-        - loop_var: user
+        loop_var: user
 
     - name: Create authorized_keys file per user
       ansible.builtin.copy:
         dest: "/home/{{ user }}/.ssh/authorized_keys"
-        content: "{{  lookup('aws_ssm', '"{{ prefix }}/importer/ssh/{{ user }}/public_key"', region='eu-west-2' ) }}"
+        content: "{{  lookup('aws_ssm', '{{ prefix }}/importer/ssh/{{ user }}/public_key', region='eu-west-2' ) }}"
         owner: "{{ user }}"
         group: "{{ user }}"
         remote_src: true
         mode: '0400'
       loop: "{{ users }}"
       loop_control:
-        - loop_var: user
+        loop_var: user
 
     - name: Update /etc/sudoers to allow wheel group to have passwordless sudo
       ansible.builtin.lineinfile:
